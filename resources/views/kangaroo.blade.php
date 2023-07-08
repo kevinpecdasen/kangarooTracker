@@ -1,9 +1,9 @@
 @extends('layout')
 
 @section('bodyContent')
-    <h3 class="text-center mb-3">{{ $title ?? "Add Kangaroo" }}</h3>
+    <h3 class="mb-3"><i class="bi {{ $action === 'edit' ? 'bi-pencil-fill' : 'bi-save-fill' }}"></i> {{ $title ?? "Add Kangaroo" }}</h3>
     <div id="msgs"></div>
-    <form>
+    <form id="kangaroo_form">
         <div class="row">
             <div class="col-6">
                  <div class="input-group mb-3">
@@ -99,7 +99,11 @@
             @method( $action == "add" ? "POST" : "PUT" )
             <input type="hidden" name="id" value="{{ $data['id'] ?? "" }}">
             <input type="hidden" name="action" value="{{ $action ?? "add" }}">
+
+
             <input type="submit" name="save" value="{{ isset($data['id']) ? 'Update' : 'Save' }}" class="btn btn-outline-primary">
+            &emsp;
+            <input type="reset" class="btn btn-outline-secondary"/>
         </div>
     </form>
 @endsection
@@ -133,7 +137,7 @@
                                         "<h3 class='alert-heading'>Success!</h3>" +
                                         "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>" +
                                         "<span aria-hidden='true'>&times;</span> </button><hr/>" +
-                                        "<span>Data us saved.</span>";
+                                        "<span>Data saved.</span>";
                                     $('#msgs').html(successMsg);
                                     kangaroo.handleResetForm();
                                     kangaroo.fadeAlertMsg();

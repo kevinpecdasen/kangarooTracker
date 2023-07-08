@@ -1,7 +1,7 @@
 @extends('layout')
 
 @section('bodyContent')
-    <h3 class="text-center mb-3">All List</h3>
+    <h3 class="mb-3"><i class="bi bi-view-list"></i> All List</h3>
 
     <div id="all_kangaroos"></div>
 @endsection
@@ -39,14 +39,13 @@
                              searchEnabled: true,
                         },
                         paging: {
-                            pageSize: 15,
-                            showPageSizeSelector: true,
-                            allowedPageSizes: [5, 10, 20],
+                            pageSize: 10,
                             showInfo: true,
                         },
                         pager: {
-                            // showPageSizeSelector: true,
+                            showPageSizeSelector: true,
                             showNavigationButtons: true,
+                            allowedPageSizes: [10, 20],
                             showInfo: true,
                         },
                         columns: [
@@ -84,6 +83,25 @@
                                 }
                             },
                         ],
+                        filterRow: {
+                            visible: true, // Set to true to enable the filter row
+                            applyFilter: "auto",
+                            operationDescriptions: {
+                                equal: "Equals",
+                                notEqual: "Does not equal",
+                                lessThan: "Less than",
+                                lessThanOrEqual: "Less than or equal to",
+                                greaterThan: "Greater than",
+                                greaterThanOrEqual: "Greater than or equal to",
+                                startsWith: "Starts with",
+                                contains: "Contains",
+                                notContains: "Does not contain",
+                                endsWith: "Ends with",
+                                between: "Between"
+                            }
+                        }
+
+
                     });
                 }
             };

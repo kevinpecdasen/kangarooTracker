@@ -6,6 +6,7 @@ use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 use App\Models\Kangaroo as KangarooModel;
@@ -24,6 +25,9 @@ class Kangaroo extends Controller
         return view('kangaroo', $data);
     }
 
+    /**
+     * @return View
+     */
     public function allList()
     {
         $data['title'] = "All List";
@@ -31,6 +35,10 @@ class Kangaroo extends Controller
         return view('all_list', $data);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function addRecord(Request $request)
     {
         $validateDate = Validator::make($request->all(), [
@@ -62,6 +70,10 @@ class Kangaroo extends Controller
         return response()->json($result);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function editRecord(Request $request)
     {
         $validateDate = Validator::make($request->all(), [
@@ -99,6 +111,10 @@ class Kangaroo extends Controller
         return response()->json($result);
     }
 
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
     public function getAll(Request $request)
     {
         $kangaroos = KangarooModel::query();
@@ -112,32 +128,28 @@ class Kangaroo extends Controller
             $kangaroos->orderByRaw($request->get('$orderby'));
         }
         if ($request->get('$filter')) {
-            $filterString = "";
-            preg_match("/'([^']+)'/", $request->get('$filter'), $matches);
-            $searchString = $matches[1];
+            $filterString = str_replace('eq', '=', $request->get('$filter'));
+            $filterString = str_replace(' ge ', ' >= ', $filterString);
+            $filterString = str_replace(' le ', ' <= ', $filterString);
+            $filterString = str_replace(' lt ', ' < ', $filterString);
+            $filterString = str_replace(' gt ', ' > ', $filterString);
+            $filterString = str_replace(' ne ', ' <> ', $filterString);
+            $filterDivsAnd = explode('and', $filterString);
 
-            //fix filter search query
-            $filterDivs = explode('or', $request->get('$filter'));
-            foreach ($filterDivs as $filter) {
-                //searching for strings columns
-                if (strpos( $filter, 'tolower(')) {
-                    preg_match("/tolower\(([^)]+)\)/", $filter, $matches);
-                    $column = $matches[1];
-                    $filterString .= (!empty($filterString) ? " OR " : ""). " lower($column) LIKE '%$searchString%'";
+            foreach ($filterDivsAnd as $andDiv) {
+                $transformedString = "";
+                if (strpos($andDiv,' or ')) {
+                    $filterDivsOr = explode('or', $andDiv);
+                    foreach ($filterDivsOr as $orDiv) {
+                        $transformedString = $this->fixLikeFiltering($orDiv);
+                        $filterString = str_replace($orDiv, $transformedString, $filterString);
+                    }
+                } else {
+                    $transformedString = $this->fixLikeFiltering($andDiv);
                 }
-                //searching for date columns
-                if (strpos( $filter, ' ge ') && strpos( $filter, ' lt ')) {
-                    preg_match("/\(\(([^\s+]+)/", $filter, $matches);
-                    $column = $matches[1];
-                    $filterString .= (!empty($filterString) ? " OR " : ""). " $column LIKE '%$searchString%'";
-                }
-                //searching for numerical columns
-                if (strpos( $filter, ' eq ')) {
-                    preg_match("/\(([^\s+]+)/", $filter, $matches);
-                    $column = $matches[1];
-                    $searchString = floatval($searchString);
-                    $filterString .= (!empty($filterString) ? " OR " : ""). " $column = $searchString";
-                }
+
+                $filterString = str_replace($andDiv, $transformedString, $filterString);
+
             }
 
             if (!empty($filterString)) {
@@ -151,6 +163,41 @@ class Kangaroo extends Controller
         $collection['data'] = $kangaroosData;
         $collection['totalCount'] = KangarooModel::count();
         return response()->json($collection);
+    }
+
+    /**
+     * @param string $substringString
+     * @return string
+     */
+    private function fixLikeFiltering(string $substringString): string
+    {
+        if ( (
+                str_contains($substringString, 'substringof')
+                || str_contains($substringString, 'startswith')
+                || str_contains($substringString, 'endswith')
+            )
+            && str_contains($substringString, 'tolower')) {
+
+            preg_match("/'([^']+)'/", $substringString, $matches);
+            $searchString = $matches[1];
+            preg_match("/tolower\(([^)]+)\)/", $substringString, $matches);
+            $column = $matches[1];
+
+            if (str_contains($substringString, 'startswith')) {
+                $strToReplace = "startswith(tolower($column),'$searchString')";
+                return str_replace($strToReplace, "LOWER($column) LIKE '$searchString%'", $substringString);
+            }
+            else if (str_contains($substringString, 'endswith')) {
+                $strToReplace = "endswith(tolower($column),'$searchString')";
+                return str_replace($strToReplace, "LOWER($column) LIKE '%$searchString'", $substringString);
+            }
+            else {
+                $strToReplace = "substringof('$searchString',tolower($column))";
+                return str_replace($strToReplace, "LOWER($column) LIKE '%$searchString%'", $substringString);
+            }
+        }
+
+        return $substringString;
     }
 
     /**
