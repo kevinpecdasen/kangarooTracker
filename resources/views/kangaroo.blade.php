@@ -97,7 +97,7 @@
         <div class="row mt-5">
             @csrf
             @method( $action == "add" ? "POST" : "PUT" )
-            <input type="hidden" name="id" value="{{ $data['id'] ?? "" }}">
+            <input type="hidden" name="id" value="{{ $data['hashedId'] ?? "" }}">
             <input type="hidden" name="action" value="{{ $action ?? "add" }}">
 
 

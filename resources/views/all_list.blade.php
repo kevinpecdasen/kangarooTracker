@@ -75,8 +75,7 @@
                                     .text('Edit')
                                     .on('dxclick', function() {
                                         // Redirect to another page
-                                        const editurl = '/update_kangaroo/' + options.data.id;
-                                        // window.open(editurl, '_blank');
+                                        const editurl = '/update_kangaroo/' + options.data.hashedId;
                                         window.location.href = editurl;
                                     })
                                     .appendTo(container);
@@ -100,8 +99,6 @@
                                 between: "Between"
                             }
                         }
-
-
                     });
                 }
             };

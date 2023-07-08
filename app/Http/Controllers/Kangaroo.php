@@ -10,6 +10,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 use App\Models\Kangaroo as KangarooModel;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Validator;
 
 class Kangaroo extends Controller
@@ -77,7 +78,6 @@ class Kangaroo extends Controller
     public function editRecord(Request $request)
     {
         $validateDate = Validator::make($request->all(), [
-            'id'    => 'required|numeric',
             'name' => 'required|string|max:255',
             'nickname' => 'nullable|string|max:255',
             'weight' => 'required|numeric|max:100|min:0',
@@ -88,12 +88,13 @@ class Kangaroo extends Controller
             'birthday' => 'required|date'
         ]);
 
+        $id = Crypt::decryptString($request->get('id'));
         if ($validateDate->fails()) {
             return response()->json(['errors' => $validateDate->errors()], 422);
         }
 
         try {
-            $kangaroo = KangarooModel::findOrFail($request->get('id'));
+            $kangaroo = KangarooModel::findOrFail($id);
         } catch (ModelNotFoundException $e) {
             return response()->json(['errors' => ['Kangaroo not found!'] ], 404);
         }
@@ -160,6 +161,10 @@ class Kangaroo extends Controller
 
         $kangaroosData = $kangaroos->get();
 
+        foreach ($kangaroosData as $k => $v) {
+            $kangaroosData[$k]->hashedId = Crypt::encryptString($v->id);
+        }
+
         $collection['data'] = $kangaroosData;
         $collection['totalCount'] = KangarooModel::count();
         return response()->json($collection);
@@ -201,12 +206,14 @@ class Kangaroo extends Controller
     }
 
     /**
-     * @param int $id
+     * @param int $hashedId
      * @return void
      */
-    public  function editForm(int $id)
+    public  function editForm(string $hashedId)
     {
+        $id = Crypt::decryptString($hashedId);
         $kangaroo = KangarooModel::findOrFail($id);
+        $kangaroo->hashedId = $hashedId;
 
         $data['title'] = "Edit Kangaroo";
         $data['action'] = "edit";
