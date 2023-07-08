@@ -9,5 +9,5 @@ Things done.
 1. Added add kangaroo page
 2. Added page for listing of all Kangaroo records.
 3. Enabled searching, column sorting, filtering function and it's different methods.
-4. Enabled editing page for the desired Kangaroo to change information.
+4. Enabled editing page for the desired Kangaroo to change information. (Editing link is found at the last column of all kangaroo list page)
 

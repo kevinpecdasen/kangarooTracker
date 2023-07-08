@@ -45,7 +45,7 @@
                         pager: {
                             showPageSizeSelector: true,
                             showNavigationButtons: true,
-                            allowedPageSizes: [10, 20],
+                            allowedPageSizes: [10, 15],
                             showInfo: true,
                         },
                         columns: [
@@ -70,8 +70,8 @@
                             }, {
                                 caption: 'Actions',
                                 cellTemplate: function(container, options) {
-                                    $('<a>')
-                                    .addClass('dx-link')
+                                    $('<button>')
+                                    .addClass('btn btn-sm btn-secondary')
                                     .text('Edit')
                                     .on('dxclick', function() {
                                         // Redirect to another page
