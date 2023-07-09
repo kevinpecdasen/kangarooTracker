@@ -42,19 +42,19 @@ class Kangaroo extends Controller
      */
     public function addRecord(Request $request)
     {
-        $validateDate = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|unique:kangaroos|max:255',
             'nickname' => 'nullable|string|max:255',
-            'weight' => 'required|numeric|max:100|min:0',
-            'height' => 'required|numeric|max:100|min:0',
+            'weight' => 'required|numeric|max:250|min:0',
+            'height' => 'required|numeric|max:500|min:0',
             'gender' => 'required|string|max:20|min:0',
-            'color' => 'nullable|string|max:30',
+            'color' => 'nullable|string|max:35',
             'friendliness' => 'nullable|string|max:30',
             'birthday' => 'required|date'
         ]);
 
-        if ($validateDate->fails()) {
-            return response()->json(['errors' => $validateDate->errors()], 422);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         $kangaroo = new KangarooModel;
@@ -77,20 +77,20 @@ class Kangaroo extends Controller
      */
     public function editRecord(Request $request)
     {
-        $validateDate = Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'nickname' => 'nullable|string|max:255',
-            'weight' => 'required|numeric|max:100|min:0',
-            'height' => 'required|numeric|max:100|min:0',
+            'weight' => 'required|numeric|max:250|min:0',
+            'height' => 'required|numeric|max:500|min:0',
             'gender' => 'required|string|max:20|min:0',
-            'color' => 'nullable|string|max:30',
+            'color' => 'nullable|string|max:35',
             'friendliness' => 'nullable|string|max:30',
             'birthday' => 'required|date'
         ]);
 
         $id = Crypt::decryptString($request->get('id'));
-        if ($validateDate->fails()) {
-            return response()->json(['errors' => $validateDate->errors()], 422);
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
         }
 
         try {

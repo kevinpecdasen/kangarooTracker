@@ -39,6 +39,8 @@
                              searchEnabled: true,
                         },
                         paging: {
+                            // showPageSizeSelector: true,
+                            showNavigationButtons: true,
                             pageSize: 10,
                             showInfo: true,
                         },
